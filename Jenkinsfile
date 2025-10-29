@@ -39,6 +39,8 @@ pipeline {
         stage('Checkout Source') {
             steps {
                 checkout scm
+                script {
+                    sh 'ls -al'
             }
         }
 
