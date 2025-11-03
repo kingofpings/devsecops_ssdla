@@ -51,12 +51,12 @@ pipeline {
                 script {
                     sh 'curl -o trivy-html.tpl https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/html.tpl'
                     sh """
-                        cd $WORKSPACE/devsecops_ssdla
+                        cd $WORKSPACE
                         composer install --no-interaction --no-progress --prefer-dist
                         pwd
-                        docker run --rm -v $WORKSPACE/devsecops_ssdla:/src -w /src returntocorp/semgrep semgrep scan --config=auto . --json --output=semgrep-report-${env.BRANCH_NAME}-${env.BUILD_NUMBER}.sarif
+                        docker run --rm -v $WORKSPACE:/src -w /src returntocorp/semgrep semgrep scan --config=auto . --json --output=semgrep-report-${env.BRANCH_NAME}-${env.BUILD_NUMBER}.sarif
                     """
-                    archiveArtifacts "devsecops_ssdla/semgrep-report-${env.BRANCH_NAME}-${env.BUILD_NUMBER}.sarif"
+                    archiveArtifacts "$WORKSPACE/semgrep-report-${env.BRANCH_NAME}-${env.BUILD_NUMBER}.sarif"
                     
                 }
             }
@@ -67,7 +67,7 @@ pipeline {
                 recordIssues(
                     enabledForFailure: true,
                     publishAllIssues: true,
-                    tool: sarif(pattern: "devsecops_ssdla/semgrep-report-${env.BRANCH_NAME}-${env.BUILD_NUMBER}.sarif")
+                    tool: sarif(pattern: "semgrep-report-${env.BRANCH_NAME}-${env.BUILD_NUMBER}.sarif")
                 )
             }
         }
@@ -80,9 +80,9 @@ pipeline {
                 withSonarQubeEnv('SonarQubeScanner') {  // must match SonarQube server config name in Jenkins
                     sh """
                         $SCANNER_HOME/bin/sonar-scanner \
-                        -Dsonar.sources=devsecops_ssdla \
-                        -Dsonar.projectName='devsecops_ssdla-${env.BRANCH_NAME}' \
-                        -Dsonar.projectKey=devsecops_ssdla-${env.BRANCH_NAME} \
+                        -Dsonar.sources=$WORKSPACE \
+                        -Dsonar.projectName='$WORKSPACE-${env.BRANCH_NAME}' \
+                        -Dsonar.projectKey=$WORKSPACE-${env.BRANCH_NAME} \
                         -Dsonar.host.url=${env.SONAR_HOST_URL} \
                     """
                 }
@@ -92,7 +92,7 @@ pipeline {
         stage('Trivy Scan') {
             steps {
                 script {
-                    if (fileExists('devsecops_ssdla/composer.lock')) {
+                    if (fileExists('$WORKSPACE/composer.lock')) {
                         // JSON report
                         sh """
                             trivy fs . --skip-version-check --severity CRITICAL --format json --output trivy-report-${env.BRANCH_NAME}-${env.BUILD_NUMBER}.json
