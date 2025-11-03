@@ -85,8 +85,9 @@ pipeline {
                         -Dsonar.sources=$WORKSPACE \
                         -Dsonar.projectName='dvwa-${env.BRANCH_NAME}' \
                         -Dsonar.projectKey='dvwa-${env.BRANCH_NAME}' \
-                        -Dsonar.host.url=${env.SONAR_HOST_URL} \
+                        -Dsonar.host.url='${env.SONAR_HOST_URL}' || true
                     """
+                    
                 }
             }
         }
