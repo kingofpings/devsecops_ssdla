@@ -50,12 +50,12 @@ pipeline {
                 script {
                     sh 'curl -o trivy-html.tpl https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/html.tpl'
                     sh """
-                        cd $WORKSPACE/vulnerabilities/api
+                        cd $WORKSPACE/devsecops_ssdla
                         composer install --no-interaction --no-progress --prefer-dist
                         pwd
-                        docker run --rm -v $WORKSPACE/vulnerabilities/api:/src -w /src returntocorp/semgrep semgrep scan --config=auto . --json --output=semgrep-report-${env.BRANCH_NAME}-${env.BUILD_NUMBER}.sarif
+                        docker run --rm -v $WORKSPACE/devsecops_ssdla:/src -w /src returntocorp/semgrep semgrep scan --config=auto . --json --output=semgrep-report-${env.BRANCH_NAME}-${env.BUILD_NUMBER}.sarif
                     """
-                    archiveArtifacts "vulnerabilities/api/semgrep-report-${env.BRANCH_NAME}-${env.BUILD_NUMBER}.sarif"
+                    archiveArtifacts "devsecops_ssdla/semgrep-report-${env.BRANCH_NAME}-${env.BUILD_NUMBER}.sarif"
                     
                 }
             }
@@ -66,7 +66,7 @@ pipeline {
                 recordIssues(
                     enabledForFailure: true,
                     publishAllIssues: true,
-                    tool: sarif(pattern: "vulnerabilities/api/semgrep-report-${env.BRANCH_NAME}-${env.BUILD_NUMBER}.sarif")
+                    tool: sarif(pattern: "devsecops_ssdla/semgrep-report-${env.BRANCH_NAME}-${env.BUILD_NUMBER}.sarif")
                 )
             }
         }
@@ -79,7 +79,7 @@ pipeline {
                 withSonarQubeEnv('SonarQubeScanner') {  // must match SonarQube server config name in Jenkins
                     sh """
                         $SCANNER_HOME/bin/sonar-scanner \
-                        -Dsonar.sources=vulnerabilities/api \
+                        -Dsonar.sources=devsecops_ssdla \
                         -Dsonar.projectName='DVWA-${env.BRANCH_NAME}' \
                         -Dsonar.projectKey=DVWA-${env.BRANCH_NAME} \
                         -Dsonar.host.url=${env.SONAR_HOST_URL} \
@@ -91,7 +91,7 @@ pipeline {
         stage('Trivy Scan') {
             steps {
                 script {
-                    if (fileExists('vulnerabilities/api/composer.lock')) {
+                    if (fileExists('devsecops_ssdla/composer.lock')) {
                         // JSON report
                         sh """
                             trivy fs . --skip-version-check --severity CRITICAL --format json --output trivy-report-${env.BRANCH_NAME}-${env.BUILD_NUMBER}.json
