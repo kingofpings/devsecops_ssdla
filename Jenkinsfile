@@ -41,6 +41,7 @@ pipeline {
                 checkout scm
                 script {
                     sh 'ls -al'
+                    sh 'pwd'
                 }
             }
         }
