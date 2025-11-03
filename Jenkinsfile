@@ -80,8 +80,8 @@ pipeline {
                     sh """
                         $SCANNER_HOME/bin/sonar-scanner \
                         -Dsonar.sources=devsecops_ssdla \
-                        -Dsonar.projectName='DVWA-${env.BRANCH_NAME}' \
-                        -Dsonar.projectKey=DVWA-${env.BRANCH_NAME} \
+                        -Dsonar.projectName='devsecops_ssdla-${env.BRANCH_NAME}' \
+                        -Dsonar.projectKey=devsecops_ssdla-${env.BRANCH_NAME} \
                         -Dsonar.host.url=${env.SONAR_HOST_URL} \
                     """
                 }
