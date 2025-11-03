@@ -52,8 +52,9 @@ pipeline {
                     sh 'curl -o trivy-html.tpl https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/html.tpl'
                     sh """
                         cd $WORKSPACE
-                        composer install --no-interaction --no-progress --prefer-dist
                         pwd
+                        ls -al
+                        composer install --no-interaction --no-progress --prefer-dist
                         docker run --rm -v $WORKSPACE:/src -w /src returntocorp/semgrep semgrep scan --config=auto . --json --output=semgrep-report-${env.BRANCH_NAME}-${env.BUILD_NUMBER}.sarif
                     """
                     archiveArtifacts "$WORKSPACE/semgrep-report-${env.BRANCH_NAME}-${env.BUILD_NUMBER}.sarif"
