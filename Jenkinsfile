@@ -54,6 +54,7 @@ pipeline {
                         cd $WORKSPACE
                         pwd
                         ls -al
+                        composer init
                         composer install --no-interaction --no-progress --prefer-dist
                         docker run --rm -v $WORKSPACE:/src -w /src returntocorp/semgrep semgrep scan --config=auto . --json --output=semgrep-report-${env.BRANCH_NAME}-${env.BUILD_NUMBER}.sarif
                     """
