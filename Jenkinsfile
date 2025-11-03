@@ -54,7 +54,7 @@ pipeline {
                         cd $WORKSPACE
                         pwd
                         ls -al
-                        composer init --no-interaction
+                        composer init --no-interaction --name="dvwa" --description="desc"
                         composer install --no-interaction --no-progress --prefer-dist
                         docker run --rm -v $WORKSPACE:/src -w /src returntocorp/semgrep semgrep scan --config=auto . --json --output=semgrep-report-${env.BRANCH_NAME}-${env.BUILD_NUMBER}.sarif
                     """
