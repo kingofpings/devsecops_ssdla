@@ -157,7 +157,7 @@ pipeline {
         }
 
         stage('Trivy Image Scan') {
-            agent { label 'slave' }
+            agent { label 'self' }
             steps {
                 script {
                     // JSON report
