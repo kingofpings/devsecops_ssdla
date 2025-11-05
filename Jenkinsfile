@@ -283,6 +283,7 @@ pipeline {
 
     post {
         always {
+            agent { label 'slave' }
             script {
                 sh """
                     echo "Cleaning up resources..."
