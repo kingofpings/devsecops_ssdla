@@ -149,7 +149,7 @@ pipeline {
                                 --label branch=${env.BRANCH_NAME} \
                                 --label build_url=${env.BUILD_URL} \
                                 -t ${env.IMAGE_NAME} \
-                                -t ${env.IMAGE_NAME_BRANCH} .
+                                -t ${env.IMAGE_NAME_BRANCH} . || true
                         """
                     }
                 }
