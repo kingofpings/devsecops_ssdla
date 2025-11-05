@@ -1,5 +1,6 @@
 pipeline {
-    agent any
+    //agent any
+    agent none
 
     triggers {
         pollSCM('H/15 * * * *')
@@ -19,6 +20,7 @@ pipeline {
 
     stages {
         stage('Initialize') {
+            agent { label 'slave' }
             steps {
                 script {
                     if (env.BRANCH_NAME == 'prod') {
@@ -37,6 +39,7 @@ pipeline {
         }
 
         stage('Checkout Source') {
+            agent { label 'slave' }
             steps {
                 checkout scm
                 script {
@@ -47,6 +50,7 @@ pipeline {
         }
 
         stage('Build and Scan') {
+            agent { label 'slave' }
             steps {
                 script {
                     sh 'curl -o trivy-html.tpl https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/html.tpl'
@@ -65,6 +69,7 @@ pipeline {
         }
 
         stage('Publish SARIF Report') {
+            agent { label 'slave' }
             steps {
                 recordIssues(
                     enabledForFailure: true,
@@ -75,6 +80,7 @@ pipeline {
         }
 
         stage('SonarQube Analysis') {
+            agent { label 'slave' }
             environment {
                 SCANNER_HOME = tool 'SonarQubeScanner'  // must match Jenkins Global Tool Configuration
             }
@@ -93,6 +99,7 @@ pipeline {
         }
 
         stage('Trivy Scan') {
+            agent { label 'self' }
             steps {
                 script {
                     if (fileExists('$WORKSPACE/composer.lock')) {
@@ -113,6 +120,7 @@ pipeline {
         }
 
         stage('Publish Trivy FS Reports') {
+            agent { label 'slave' }
             steps {
                 recordIssues(
                     enabledForFailure: true,
@@ -131,6 +139,7 @@ pipeline {
         }
 
         stage('Docker Build and Push') {
+            agent { label 'self' }
             steps {
                 script {
                     docker.withRegistry("http://${env.REGISTRY_URL}", env.DOCKER_CREDENTIALS_ID) {
@@ -148,6 +157,7 @@ pipeline {
         }
 
         stage('Trivy Image Scan') {
+            agent { label 'slave' }
             steps {
                 script {
                     // JSON report
@@ -164,6 +174,7 @@ pipeline {
         }
 
         stage ('Docker Push') {
+            agent { label 'self' }
             steps {
                 script {
                     docker.withRegistry("http://${env.REGISTRY_URL}", env.DOCKER_CREDENTIALS_ID) {
@@ -175,6 +186,7 @@ pipeline {
         }
 
         stage('Publish Docker Image Reports') {
+            agent { label 'self' }
             steps {
                 recordIssues(
                     enabledForFailure: true,
@@ -193,6 +205,7 @@ pipeline {
         }
 
         stage('Deploy') {
+            agent { label 'slave' }
             when {
                 anyOf {
                     branch 'dev'
@@ -215,6 +228,7 @@ pipeline {
         }
 
         stage('Health Check') {
+            agent { label 'slave' }
             steps {
                 script {
                     // Use the same Docker network your service runs on
@@ -231,6 +245,7 @@ pipeline {
         }
 
         stage('DAST with ZAP') {
+            agent { label 'self' }
             steps {
                 script {
                     def targetHost = 'dvwa'
@@ -251,6 +266,7 @@ pipeline {
         }
 
         stage('Publish ZAP Reports') {
+            agent { label 'slave' }
             steps {
                 publishHTML([
                     reportDir: 'zap-work',
