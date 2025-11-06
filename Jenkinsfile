@@ -283,8 +283,9 @@ pipeline {
 
     post {
         always {
-            agent { label 'slave' }
+            //agent { label 'slave' }
             script {
+                agent { label 'slave' }
                 sh """
                     echo "Cleaning up resources..."
                     trivy clean --all || true
@@ -297,7 +298,22 @@ pipeline {
                 cleanWs()
             }
         }
-        success { echo "Pipeline completed successfully" }
-        failure { echo "Pipeline failed. Check logs." }
+        success {
+            script {
+                node('slave') 
+                        {
+                            echo "Pipeline completed successfully"
+                        }
+                    }
+                }
+        failure {
+            script {
+                node('slave') 
+                        {
+                            echo "Pipeline failed. Check logs." 
+                        }
+            }
+        }
     }
 }
+
